@@ -20,20 +20,30 @@ public class MeshOperation : MonoBehaviour
 
     }
 
-    public void SubdevideMesh(MeshFilter meshFilter)
+    public void Subdivision(MeshFilter meshFilter)
     {
-        Mesh mesh = meshFilter.mesh;
+        print(meshFilter.mesh.vertices.Length);
+        SubdivideMesh(meshFilter.mesh);
+        print(meshFilter.mesh.vertices.Length);
+    }
 
-        List<Vector3> vertices = meshFilter.mesh.vertices.ToList();
-        List<Vector3> normals = meshFilter.mesh.normals.ToList();
+    private void AddElement(List<int> values) {
+        values.Add(1);
+        values.Add(2);
+    }
+
+    private void SubdivideMesh(Mesh mesh) {
+
+        List<Vector3> vertices = mesh.vertices.ToList();
+        List<Vector3> normals = mesh.normals.ToList();
 
         List<int> indices = new List<int>();//empty list, this is for new mesh.triangles
 
-        int[] triangles = meshFilter.mesh.triangles; //original triangle
+        int[] triangles = mesh.triangles; //original triangles
 
         Dictionary<uint, int> midVectices = new Dictionary<uint, int>(); //To prevent the repeat point
 
-        //1) Bisect T  by its longest edge
+        #region Step 1
         for (int i = 0; i + 2 < triangles.Length; i += 3)
         {
             int index0 = triangles[i];
@@ -76,14 +86,14 @@ public class MeshOperation : MonoBehaviour
                 {
                     middleVertexIndex = midVectices[t1];
                 }
-                else {
+                else
+                {
                     //Get new Point
                     middleVertexIndex = vertices.Count;
                     //Add to dictionary
                     midVectices.Add(t1, middleVertexIndex);
-                    Vector3 middlePoint = (vertices[index1] + vertices[index2]) * 0.5f;
                     //Add new Vertex
-                    vertices.Add(middlePoint);
+                    vertices.Add((vertices[index1] + vertices[index2]) * 0.5f);
                     //Add new Normal
                     normals.Add((normals[index1] + normals[index2]).normalized);
                 }
@@ -98,14 +108,11 @@ public class MeshOperation : MonoBehaviour
                 indices.AddRange(new int[] { index0, index1, index2 });
             }
         }
+        #endregion
 
         mesh.vertices = vertices.ToArray();
         mesh.triangles = indices.ToArray();
         mesh.normals = normals.ToArray();
-
-        print(mesh.vertices.Length);
-
-        meshFilter.mesh = mesh;
     }
 
 }
