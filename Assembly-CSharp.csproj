@@ -53,8 +53,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\Inflate.cs" />
-     <Compile Include="Assets\Scripts\SinLoop.cs" />
+     <Compile Include="Assets\Scripts\MonoBehaviour\Inflate.cs" />
+     <Compile Include="Assets\Scripts\MonoBehaviour\MeshHelper.cs" />
+     <Compile Include="Assets\Scripts\MonoBehaviour\MeshOperation.cs" />
+     <Compile Include="Assets\Scripts\MonoBehaviour\SinLoop.cs" />
+     <Compile Include="Assets\Scripts\Utility\CG_Utility.cs" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>D:/Unity/Projects/CG-Project/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
  </Reference>
