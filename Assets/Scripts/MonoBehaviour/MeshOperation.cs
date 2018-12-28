@@ -20,8 +20,6 @@ public class MeshOperation : MonoBehaviour
 
     }
 
-    static Dictionary<uint, int> newVectices;
-
     public void SubdevideMesh(MeshFilter meshFilter)
     {
         Mesh mesh = meshFilter.mesh;
@@ -33,6 +31,9 @@ public class MeshOperation : MonoBehaviour
 
         int[] triangles = meshFilter.mesh.triangles; //original triangle
 
+        Dictionary<uint, int> midVectices = new Dictionary<uint, int>(); //To prevent the repeat point
+
+        //1) Bisect T  by its longest edge
         for (int i = 0; i + 2 < triangles.Length; i += 3)
         {
             int index0 = triangles[i];
@@ -62,16 +63,34 @@ public class MeshOperation : MonoBehaviour
                     }
                 }
 
-                //Get new Point
-                int middlePointIndex = vertices.Count;
-                Vector3 middlePoint = (vertices[index1] + vertices[index2]) * 0.5f;
-                //Add new Vertex
-                vertices.Add(middlePoint);
-                //Add new Normal
-                normals.Add((normals[index1] + normals[index2]).normalized);
+                int middleVertexIndex;
+
+                uint t1 = ((uint)index1 << 16) | (uint)index2;
+                uint t2 = ((uint)index2 << 16) | (uint)index1;
+
+                if (midVectices.ContainsKey(t2))
+                {
+                    middleVertexIndex = midVectices[t2];
+                }
+                else if (midVectices.ContainsKey(t1))
+                {
+                    middleVertexIndex = midVectices[t1];
+                }
+                else {
+                    //Get new Point
+                    middleVertexIndex = vertices.Count;
+                    //Add to dictionary
+                    midVectices.Add(t1, middleVertexIndex);
+                    Vector3 middlePoint = (vertices[index1] + vertices[index2]) * 0.5f;
+                    //Add new Vertex
+                    vertices.Add(middlePoint);
+                    //Add new Normal
+                    normals.Add((normals[index1] + normals[index2]).normalized);
+                }
+
                 //Add new Triangles
-                indices.AddRange(new int[] { index0, index1, middlePointIndex });
-                indices.AddRange(new int[] { index0, middlePointIndex, index2 });
+                indices.AddRange(new int[] { index0, index1, middleVertexIndex });
+                indices.AddRange(new int[] { index0, middleVertexIndex, index2 });
             }
             else
             {
@@ -83,6 +102,8 @@ public class MeshOperation : MonoBehaviour
         mesh.vertices = vertices.ToArray();
         mesh.triangles = indices.ToArray();
         mesh.normals = normals.ToArray();
+
+        print(mesh.vertices.Length);
 
         meshFilter.mesh = mesh;
     }
