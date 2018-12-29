@@ -9,6 +9,7 @@ public class MeshOperation : MonoBehaviour
     [Header("Parameters")]
     [SerializeField]
     float areaThreshold;
+    float deltaT = 0.5f;
 
     void Start()
     {
@@ -32,6 +33,17 @@ public class MeshOperation : MonoBehaviour
         meshFilter.mesh.triangles = cgMesh.GetTriangles();
 
         print(meshFilter.mesh.vertices.Length);
+    }
+
+    public void CalculatePosition(MeshFilter meshFilter)
+    {
+        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
+        cgMesh.CalculatePos(deltaT);
+ 
+        meshFilter.mesh.vertices = cgMesh.GetVertices();
+        meshFilter.mesh.normals = cgMesh.GetNormals();
+        meshFilter.mesh.triangles = cgMesh.GetTriangles();
+
     }
 
 }

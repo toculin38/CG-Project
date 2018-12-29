@@ -152,6 +152,79 @@ namespace ComputerGraphic
         {
             return triangles.SelectMany(t => new int[] { t.A, t.B, t.C }).ToArray();
         }
+
+        public void CalculatePos(float deltaT)
+        {
+            for (int i = 0; i < vertices.Count; i ++)
+            {
+                List<int> triangleIndex = new List<int>();
+                for (int j = 0; j < triangles.Count; j++)
+                {
+                    if(triangles[j].A == i || triangles[j].B == i || triangles[j].C == i)
+                    {
+                        triangleIndex.Add(j);
+                    }
+                    
+                }
+
+                Vector3 fi = CalculateFi(triangleIndex, i);
+                Vector3 gi = CalculateGi(i);
+
+                vertices[i] = vertices[i] + deltaT * (fi -gi);
+            }
+        }
+
+        private Vector3 CalculateFi(List<int> triangleIndex, int j)
+        {
+            List<Vector3> surroundingNormal = new List<Vector3>();
+            Vector3 inflationForce = new Vector3(0.0f, 0.0f, 0.0f);
+            for (int i = 0; i < triangleIndex.Count; i++)
+            {
+                surroundingNormal.Add(normals[j]);
+
+                if (triangles[i].A == j)
+                {
+                    int k = FindNeighbor(triangles[i].B, triangles[i].C, j);
+                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].B];
+                }
+                else if (triangles[i].B == j)
+                {
+                    int k = FindNeighbor(triangles[i].A, triangles[i].C, j);
+                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
+                }
+                else if (triangles[i].A == j)
+                {
+                    int k = FindNeighbor(triangles[i].A, triangles[i].B, j);
+                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
+                }
+
+                surroundingNormal[i] = surroundingNormal[i].normalized;
+                inflationForce = inflationForce + surroundingNormal[i];
+            }
+
+            inflationForce = inflationForce.normalized;
+
+            return inflationForce;
+        }
+
+        private int FindNeighbor(int index0, int index1, int triangleIndex)
+        {
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                if (triangles[i].ContainsEdge(new ValueTuple<int, int>(index0, index1)) && i != triangleIndex)
+                {
+                    return i;
+                }
+           
+            }
+            return triangleIndex;
+
+        }
+
+        private Vector3 CalculateGi(int j)
+        {
+            return new Vector3(0.0f, 0.0f, 0.0f);
+        }
     }
 
     /// <summary>
@@ -204,5 +277,8 @@ namespace ComputerGraphic
                 (A == p1 && C == p2 || A == p2 && C == p1) ||
                 (B == p1 && C == p2 || B == p2 && C == p1);
         }
+
+
     }
+   
 }
