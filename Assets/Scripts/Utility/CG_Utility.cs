@@ -6,15 +6,6 @@ using UnityEngine;
 
 namespace ComputerGraphic
 {
-    public static class CG_Utility
-    {
-        public static float CalculateTriangleArea(Vector3 A, Vector3 B, Vector3 C)
-        {
-            Vector3 crossVector = Vector3.Cross(A - B, A - C);
-            return crossVector.magnitude * 0.5f;
-        }
-    }
-
     public class CG_Mesh
     {
         private List<Vector3> vertices = new List<Vector3>();
@@ -32,14 +23,13 @@ namespace ComputerGraphic
 
             for (int i = 0; i + 2 < tArray.Length; i += 3)
             {
-                triangles.Add(new Triangle(tArray[i], tArray[i + 1], tArray[i + 2]));
+                triangles.Add(new Triangle((tArray[i], tArray[i + 1], tArray[i + 2]), vertices));
             }
         }
 
         public void SubdivideAlgorithm(float threashold)
         {
             List<Triangle> newTriangles = new List<Triangle>();
-            List<int> nonConfirmPoints = new List<int>();
             List<ValueTuple<int, int>> nonConfirmEdges = new List<ValueTuple<int, int>>();
 
             #region Step 1
@@ -49,8 +39,8 @@ namespace ComputerGraphic
 
                 if (TriangleArea(triangle) > threashold)
                 {
-                    ValueTuple<int, int, int> dividePoints = FindDividePointsByLongestEdge(triangle);
-                    Triangle[] subTriangles = SubdivideTriangle(dividePoints);
+                    nonConfirmEdges.Add((triangle.A, triangle.B));
+                    Triangle[] subTriangles = SubdivideTriangle(triangle);
                     newTriangles.AddRange(subTriangles);
                 }
                 else
@@ -58,40 +48,50 @@ namespace ComputerGraphic
                     newTriangles.Add(triangle);
                 }
             }
-            triangles = newTriangles;
+
+            triangles.Clear();
+            triangles.AddRange(newTriangles);
+
             #endregion
-        }
-
-        private ValueTuple<int, int, int> FindDividePointsByLongestEdge(Triangle triangle)
-        {
-            int[] vertsIndices = new int[] { triangle.A, triangle.B, triangle.C };
-            float longestLength = 0;
-            int index1 = 0, index2 = 0, diagnalIndex = 0;
-            for (int i = 0; i < 3; i++)
+            while (nonConfirmEdges.Count > 0)
             {
-                int p1 = vertsIndices[i];
-                int p2 = vertsIndices[(i + 1) % vertsIndices.Length];
-                int p3 = vertsIndices[(i + 2) % vertsIndices.Length];
-                float length = Vector3.Distance(vertices[p1], vertices[p2]);
+                ValueTuple<int, int>[] edges = nonConfirmEdges.ToArray();
 
-                if (length > longestLength)
+                foreach (var edge in edges)
                 {
-                    longestLength = length;
-                    index1 = p1;
-                    index2 = p2;
-                    diagnalIndex = p3;
+                    Triangle triangle = triangles.FirstOrDefault(t => t.ContainsEdge(edge));
+
+                    if (triangle != default(Triangle))
+                    {
+                        if (triangle.IsLongestEdge(edge))
+                        {
+                            Triangle[] subTriangles = SubdivideTriangle(triangle);
+                            triangles.Remove(triangle);
+                            triangles.AddRange(subTriangles);
+                            nonConfirmEdges.Add((triangle.A, triangle.B));
+                        }
+                        else
+                        {
+                            nonConfirmEdges.Add((triangle.A, triangle.B));
+                            Debug.Log("Not longest edge case");
+                        }
+                    }
+                    else
+                    {
+                        nonConfirmEdges.Remove(edge);
+                    }
                 }
             }
-            return (index1, index2, diagnalIndex);
+
         }
 
-        private Triangle[] SubdivideTriangle(ValueTuple<int, int, int> dividePoints)
+        private Triangle[] SubdivideTriangle(Triangle triangle)
         {
-            int edgePoint1 = dividePoints.Item1;
-            int edgePoint2 = dividePoints.Item2;
-            int diagonalPoint = dividePoints.Item3;
+            int edgePoint1 = triangle.A;
+            int edgePoint2 = triangle.B;
+            int diagonalPoint = triangle.C;
 
-            if (IsMidVertexInDict(edgePoint1, edgePoint2, out uint key, out int midVertIndex) == false)
+            if (IsMidVertexInDict(triangle.A, triangle.B, out uint key, out int midVertIndex) == false)
             {
                 midVectices.Add(key, midVertIndex);
                 vertices.Add((vertices[edgePoint1] + vertices[edgePoint2]) * 0.5f);
@@ -99,8 +99,8 @@ namespace ComputerGraphic
             }
 
             return new Triangle[] {
-                new Triangle(diagonalPoint, edgePoint1, midVertIndex),
-                new Triangle(diagonalPoint, midVertIndex, edgePoint2)
+                new Triangle((diagonalPoint, edgePoint1, midVertIndex),vertices),
+                new Triangle((diagonalPoint, midVertIndex, edgePoint2),vertices)
             };
         }
 
@@ -129,11 +129,11 @@ namespace ComputerGraphic
             }
         }
 
-        private float TriangleArea(Triangle traiangle)
+        private float TriangleArea(Triangle triangle)
         {
-            Vector3 v1 = vertices[traiangle.A];
-            Vector3 v2 = vertices[traiangle.B];
-            Vector3 v3 = vertices[traiangle.C];
+            Vector3 v1 = vertices[triangle.A];
+            Vector3 v2 = vertices[triangle.B];
+            Vector3 v3 = vertices[triangle.C];
             Vector3 crossVector = Vector3.Cross(v1 - v2, v1 - v3);
             return crossVector.magnitude * 0.5f;
         }
@@ -154,25 +154,55 @@ namespace ComputerGraphic
         }
     }
 
+    /// <summary>
+    /// A triangle with 3 point indices, A and B point will make a longest edge in this triangle.
+    /// </summary>
     public class Triangle
     {
-        public int A;
-        public int B;
-        public int C;
+        //Important! A and B will make a longest edge in this triangle
+        public int A { get; private set; }
+        public int B { get; private set; }
+        public int C { get; private set; }
 
-        public Triangle(int a, int b, int c)
+        public Triangle(ValueTuple<int, int, int> points, List<Vector3> refVertices)
         {
-            A = a;
-            B = b;
-            C = c;
+            int[] vertsIndices = new int[] { points.Item1, points.Item2, points.Item3 };
+
+            float longestLength = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                int p1 = vertsIndices[i];
+                int p2 = vertsIndices[(i + 1) % vertsIndices.Length];
+                int p3 = vertsIndices[(i + 2) % vertsIndices.Length];
+                float length = Vector3.Distance(refVertices[p1], refVertices[p2]);
+
+                if (length > longestLength)
+                {
+                    longestLength = length;
+                    A = p1;
+                    B = p2;
+                    C = p3;
+                }
+            }
         }
 
-        public bool ContainsEdge(int v1, int v2)
+        public bool IsLongestEdge(ValueTuple<int, int> edge)
         {
+            int p1 = edge.Item1;
+            int p2 = edge.Item2;
+            return (A == p1 && B == p2) || (B == p1 && A == p2);
+        }
+
+        public bool ContainsEdge(ValueTuple<int, int> edge)
+        {
+            int p1 = edge.Item1;
+            int p2 = edge.Item2;
+
             return
-                (A == v1 && B == v2 || A == v2 && B == v1) ||
-                (A == v1 && C == v2 || A == v2 && C == v1) ||
-                (B == v1 && C == v2 || B == v2 && C == v1);
+                (A == p1 && B == p2 || A == p2 && B == p1) ||
+                (A == p1 && C == p2 || A == p2 && C == p1) ||
+                (B == p1 && C == p2 || B == p2 && C == p1);
         }
     }
 }

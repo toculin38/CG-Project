@@ -15,9 +15,20 @@ public class Rearranging : MonoBehaviour
         mesh.vertices = new Vector3[] {
             new Vector3(-3, -2, 0), new Vector3(-1, 2, 0), new Vector3(2, 2, 0),
             new Vector3(0, -2, 0), new Vector3(-5, -4, 0), new Vector3(-2, -4, 0),
-            new Vector3(3, -4, 0), new Vector3(3, -2, 0), new Vector3(10, 0, 0)
+            new Vector3(3, -4, 0), new Vector3(3, -2, 0), new Vector3(10, 0, 0),
+            new Vector3(5, -8, 0)
         };
-        mesh.triangles = new int[] { 0, 1, 2, 2, 3, 0, 0, 3, 4, 4, 3, 5, 5, 3, 6, 6, 3, 7, 7, 3, 8, 8, 3, 2 };
+        mesh.triangles = new int[] {
+            0, 1, 2,
+            2, 3, 0,
+            0, 3, 4,
+            4, 3, 5,
+            5, 3, 6,
+            6, 3, 7,
+            7, 3, 8,
+            8, 3, 2,
+            5, 6, 9
+        };
         mesh.RecalculateNormals();
         meshFilter.mesh = mesh;
         //如果你要用bunny試，把以上全部砍掉，然後把bunny拉到meshFilter裡
@@ -64,10 +75,10 @@ public class Rearranging : MonoBehaviour
 
                 }
             }
-            longestEdge.AddRange(new int[] {index1, index2, indexPos});
+            longestEdge.AddRange(new int[] { index1, index2, indexPos });
         }
 
-    
+
         for (int i = 0; i + 2 < triangles.Count; i += 3)
         {
             int triangleIndex0 = triangles[i];
@@ -75,18 +86,18 @@ public class Rearranging : MonoBehaviour
             int triangleIndex2 = triangles[i + 2];
             for (int j = i + 3; j + 2 < triangles.Count; j += 3)
             {
-                if((longestEdge[i] == longestEdge[j + 1]) && (longestEdge[i + 1] == longestEdge[j]))
+                if ((longestEdge[i] == longestEdge[j + 1]) && (longestEdge[i + 1] == longestEdge[j]))
                 {   //rearranging
                     triangles[i + (longestEdge[i + 2] + 1) % 3] = triangles[j + longestEdge[j + 2]];
                     triangles[j + (longestEdge[j + 2] + 1) % 3] = triangles[i + longestEdge[i + 2]];
                 }
-    
+
             }
 
             indices.AddRange(new int[] { triangles[i], triangles[i + 1], triangles[i + 2] });
         }
 
-      
+
         //重新渲染
         meshFilter.mesh.vertices = vertices.ToArray();
         meshFilter.mesh.triangles = indices.ToArray();
