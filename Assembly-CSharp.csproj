@@ -57,7 +57,8 @@
      <Compile Include="Assets\Scripts\MonoBehaviour\MeshOperation.cs" />
      <Compile Include="Assets\Scripts\MonoBehaviour\SimpleMesh.cs" />
      <Compile Include="Assets\Scripts\MonoBehaviour\SinLoop.cs" />
-     <Compile Include="Assets\Scripts\Utility\CG_Utility.cs" />
+     <Compile Include="Assets\Scripts\Utility\CG_Mesh.cs" />
+     <Compile Include="Assets\Scripts\Utility\EdgeTable.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>D:/Unity/Projects/CG-Project/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>
