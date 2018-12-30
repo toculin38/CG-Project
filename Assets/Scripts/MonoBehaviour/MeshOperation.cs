@@ -24,22 +24,28 @@ public class MeshOperation : MonoBehaviour
     public void Subdivision(MeshFilter meshFilter)
     {
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
-        cgMesh.SubdivideAlgorithm(areaThreshold);
-
-        print(meshFilter.mesh.vertices.Length);
+        cgMesh.Subdivision(areaThreshold);
 
         meshFilter.mesh.vertices = cgMesh.GetVertices();
         meshFilter.mesh.normals = cgMesh.GetNormals();
         meshFilter.mesh.triangles = cgMesh.GetTriangles();
+    }
 
-        print(meshFilter.mesh.vertices.Length);
+    public void Rearranging(MeshFilter meshFilter)
+    {
+        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
+        cgMesh.Rearranging();
+
+        meshFilter.mesh.vertices = cgMesh.GetVertices();
+        meshFilter.mesh.normals = cgMesh.GetNormals();
+        meshFilter.mesh.triangles = cgMesh.GetTriangles();
     }
 
     public void CalculatePosition(MeshFilter meshFilter)
     {
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
         cgMesh.CalculatePos(deltaT);
- 
+
         meshFilter.mesh.vertices = cgMesh.GetVertices();
         meshFilter.mesh.normals = cgMesh.GetNormals();
         meshFilter.mesh.triangles = cgMesh.GetTriangles();

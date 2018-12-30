@@ -27,32 +27,13 @@ namespace ComputerGraphic
             }
         }
 
-        public void SubdivideAlgorithm(float threashold)
+        public void Subdivision(float threashold)
         {
-            List<Triangle> newTriangles = new List<Triangle>();
-            List<ValueTuple<int, int>> nonConfirmEdges = new List<ValueTuple<int, int>>();
-
-            #region Step 1
-            for (int i = 0; i < triangles.Count; i++)
-            {
-                Triangle triangle = triangles[i];
-
-                if (TriangleArea(triangle) > threashold)
-                {
-                    nonConfirmEdges.Add((triangle.A, triangle.B));
-                    Triangle[] subTriangles = SubdivideTriangle(triangle);
-                    newTriangles.AddRange(subTriangles);
-                }
-                else
-                {
-                    newTriangles.Add(triangle);
-                }
-            }
-
-            triangles.Clear();
-            triangles.AddRange(newTriangles);
-
+            #region Find All nonconfirm edge
+            List<ValueTuple<int, int>> nonConfirmEdges = triangles.Where(t => TriangleArea(t) > threashold).Select(t => (t.A, t.B)).ToList();
             #endregion
+
+            #region Subdivide begin
             while (nonConfirmEdges.Count > 0)
             {
                 ValueTuple<int, int>[] edges = nonConfirmEdges.ToArray();
@@ -82,7 +63,30 @@ namespace ComputerGraphic
                     }
                 }
             }
+            #endregion
+        }
 
+        public void Rearranging()
+        {
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                Triangle triangle = triangles[i];
+                int tIndex = FindNeighbor(triangle.A, triangle.B, i);
+
+                for (int j = i; j < triangles.Count; j++)
+                {
+                    Triangle another = triangles[j];
+
+                    if (triangle.IsLongestEdge((another.A, another.B)) == true && triangle != another)
+                    {
+                        Triangle newTriangle1 = new Triangle((triangle.C, another.C, another.A), vertices);
+                        Triangle newTriangle2 = new Triangle((another.C, triangle.C, triangle.A), vertices);
+
+                        triangles[i] = newTriangle1;
+                        triangles[j] = newTriangle2;
+                    }
+                }
+            }
         }
 
         private Triangle[] SubdivideTriangle(Triangle triangle)
@@ -155,22 +159,21 @@ namespace ComputerGraphic
 
         public void CalculatePos(float deltaT)
         {
-            for (int i = 0; i < vertices.Count; i ++)
+            for (int i = 0; i < vertices.Count; i++)
             {
                 List<int> triangleIndex = new List<int>();
                 for (int j = 0; j < triangles.Count; j++)
                 {
-                    if(triangles[j].A == i || triangles[j].B == i || triangles[j].C == i)
+                    if (triangles[j].A == i || triangles[j].B == i || triangles[j].C == i)
                     {
                         triangleIndex.Add(j);
                     }
-                    
                 }
 
                 Vector3 fi = CalculateFi(triangleIndex, i);
                 Vector3 gi = CalculateGi(i);
 
-                vertices[i] = vertices[i] + deltaT * (fi -gi);
+                vertices[i] = vertices[i] + deltaT * (fi - gi);
             }
         }
 
@@ -215,10 +218,8 @@ namespace ComputerGraphic
                 {
                     return i;
                 }
-           
             }
             return triangleIndex;
-
         }
 
         private Vector3 CalculateGi(int j)
@@ -280,5 +281,5 @@ namespace ComputerGraphic
 
 
     }
-   
+
 }
