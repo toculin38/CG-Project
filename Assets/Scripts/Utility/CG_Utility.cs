@@ -232,7 +232,7 @@ namespace ComputerGraphic
                         Rij = vertices[i] - vertices[k];
                         //Rij = Rij.normalized;
                         Sij = Sij + Rij;
-
+                        break;   //prevent repeat
                     }
                 }
 
