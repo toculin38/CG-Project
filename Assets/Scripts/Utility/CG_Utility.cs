@@ -33,7 +33,7 @@ namespace ComputerGraphic
             List<ValueTuple<int, int>> nonConfirmEdges = triangles.Where(t => TriangleArea(t) > threashold).Select(t => (t.A, t.B)).ToList();
             #endregion
 
-            #region Subdivide begin
+            #region Begin Subdivide
             while (nonConfirmEdges.Count > 0)
             {
                 ValueTuple<int, int>[] edges = nonConfirmEdges.ToArray();
@@ -71,20 +71,26 @@ namespace ComputerGraphic
             for (int i = 0; i < triangles.Count; i++)
             {
                 Triangle triangle = triangles[i];
-                int tIndex = FindNeighbor(triangle.A, triangle.B, i);
 
                 for (int j = i; j < triangles.Count; j++)
                 {
                     Triangle another = triangles[j];
 
-                    if (triangle.IsLongestEdge((another.A, another.B)) == true && triangle != another && Vector3.Distance(vertices[another.A], vertices[another.B]) > Vector3.Distance(vertices[another.C], vertices[triangle.C]))
+                    bool rearrangeCondition =
+                        triangle.IsLongestEdge((another.A, another.B)) && //share same longest edge
+                        triangle.IsSame(another) == false &&
+                        EdgeLength((another.A, another.B)) > EdgeLength((another.C, triangle.C)); //prevent repeated
+                    
+                    if (rearrangeCondition)
                     {
                         Triangle newTriangle1 = new Triangle((triangle.C, another.C, another.A), vertices);
                         Triangle newTriangle2 = new Triangle((another.C, triangle.C, triangle.A), vertices);
 
                         triangles[i] = newTriangle1;
                         triangles[j] = newTriangle2;
+                        break;
                     }
+
                 }
             }
         }
@@ -226,6 +232,11 @@ namespace ComputerGraphic
         {
             return new Vector3(0.0f, 0.0f, 0.0f);
         }
+
+        private float EdgeLength(ValueTuple<int, int> edge)
+        {
+            return Vector3.Distance(vertices[edge.Item1], vertices[edge.Item2]);
+        }
     }
 
     /// <summary>
@@ -261,6 +272,16 @@ namespace ComputerGraphic
             }
         }
 
+        /// <summary>
+        /// determine two triangle is same. (not object reference equal! e.g. obj1.equals(obj2))
+        /// </summary>
+        /// <param name="triangle"></param>
+        /// <returns></returns>
+        public bool IsSame(Triangle triangle)
+        {
+            return A == triangle.A && B == triangle.B && C == triangle.C;
+        }
+
         public bool IsLongestEdge(ValueTuple<int, int> edge)
         {
             int p1 = edge.Item1;
@@ -278,7 +299,6 @@ namespace ComputerGraphic
                 (A == p1 && C == p2 || A == p2 && C == p1) ||
                 (B == p1 && C == p2 || B == p2 && C == p1);
         }
-
 
     }
 
