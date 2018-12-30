@@ -193,30 +193,27 @@ namespace ComputerGraphic
 
         private Vector3 CalculateFi(List<int> triangleIndex, int j)
         {
-            List<Vector3> surroundingNormal = new List<Vector3>();
-            Vector3 inflationForce = new Vector3(0.0f, 0.0f, 0.0f);
+            Vector3 surroundingNormal = Vector3.zero;
+            Vector3 inflationForce = Vector3.zero;
             for (int i = 0; i < triangleIndex.Count; i++)
             {
-                surroundingNormal.Add(normals[j]);
+                surroundingNormal = normals[j];
 
                 if (triangles[i].A == j)
                 {
-                    //int k = FindNeighbor(triangles[i].B, triangles[i].C, j);
-                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].B];
+                    surroundingNormal = FindNeighborNormal(triangles[i].B, triangles[i].C);
                 }
                 else if (triangles[i].B == j)
                 {
-                    //int k = FindNeighbor(triangles[i].A, triangles[i].C, j);
-                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
+                    surroundingNormal = FindNeighborNormal(triangles[i].A, triangles[i].C);
                 }
                 else if (triangles[i].C == j)
                 {
-                    //int k = FindNeighbor(triangles[i].A, triangles[i].B, j);
-                    surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
+                    surroundingNormal = FindNeighborNormal(triangles[i].A, triangles[i].B);
                 }
+                
 
-                surroundingNormal[i] = surroundingNormal[i].normalized;
-                inflationForce = inflationForce + surroundingNormal[i];
+                inflationForce = inflationForce + surroundingNormal.normalized;
             }
 
             inflationForce = inflationForce.normalized;
@@ -224,26 +221,39 @@ namespace ComputerGraphic
             return inflationForce;
         }
 
-        private Vector3 CalculateGi(int k)
+        private Vector3 FindNeighborNormal(int index0, int index1)
         {
-            Vector3 Sij = new Vector3(0.0f, 0.0f, 0.0f);
-            Vector3 Rij = new Vector3(0.0f, 0.0f, 0.0f);
-            for (int i = 0; i < vertices.Count; i++)
+            Vector3 surroundingNormal = Vector3.zero;
+            Triangle[] neighbors = edgeNeighborTable[(index0, index1)].ToArray();
+            if (neighbors.Length > 0)
             {
-                for (int j = 0; j < triangles.Count && i != k; j++)
+
+                foreach (var triangle in neighbors)
                 {
-                    if (triangles[j].ContainsEdge((i, k)))
-                    {
-                        Rij = vertices[i] - vertices[k];
-                        //Rij = Rij.normalized;
+                    Vector3 norm = Vector3.Cross(vertices[triangle.B] - vertices[triangle.A], vertices[triangle.C] - vertices[triangle.A]);
+                    surroundingNormal = surroundingNormal + norm.normalized;
+                }
+            }
+            return surroundingNormal.normalized;
+        }
+
+        private Vector3 CalculateGi(int i)
+        {
+            Vector3 Sij = Vector3.zero;
+            Vector3 Rij = Vector3.zero;
+            
+            for (int j = 0; j < vertices.Count && i != j; j++)
+            {
+                Triangle[] neighbors = edgeNeighborTable[(i, j)].ToArray();
+                if(neighbors.Length > 0)
+                {
+                        Rij = vertices[j] - vertices[i];
                         Sij = Sij + Rij;
-                        break;   //prevent repeat
-                    }
                 }
 
             }
-
-            return Sij * 0.02f;
+            
+            return Sij.normalized * 0.1f;
         }
 
         private float EdgeLength(ValueTuple<int, int> edge)

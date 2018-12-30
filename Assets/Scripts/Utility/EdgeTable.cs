@@ -13,6 +13,11 @@ namespace ComputerGraphic
         {
             get
             {
+                var key = EdgeToKey(edge);
+                if(dict.ContainsKey(key) == false)
+                {
+                    dict[key] = new List<Triangle>();
+                }
                 return dict[EdgeToKey(edge)];
             }
         }
