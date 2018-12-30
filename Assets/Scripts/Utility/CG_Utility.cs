@@ -95,6 +95,12 @@ namespace ComputerGraphic
             }
         }
 
+        public void AssignToMesh(Mesh mesh) {
+            mesh.vertices = vertices.ToArray();
+            mesh.normals = normals.ToArray();
+            mesh.triangles = triangles.SelectMany(t => new int[] { t.A, t.B, t.C }).ToArray();
+        }
+
         private Triangle[] SubdivideTriangle(Triangle triangle)
         {
             int edgePoint1 = triangle.A;
@@ -146,21 +152,6 @@ namespace ComputerGraphic
             Vector3 v3 = vertices[triangle.C];
             Vector3 crossVector = Vector3.Cross(v1 - v2, v1 - v3);
             return crossVector.magnitude * 0.5f;
-        }
-
-        public Vector3[] GetVertices()
-        {
-            return vertices.ToArray();
-        }
-
-        public Vector3[] GetNormals()
-        {
-            return normals.ToArray();
-        }
-
-        public int[] GetTriangles()
-        {
-            return triangles.SelectMany(t => new int[] { t.A, t.B, t.C }).ToArray();
         }
 
         public void CalculatePos(float deltaT)

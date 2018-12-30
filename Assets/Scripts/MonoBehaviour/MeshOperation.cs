@@ -25,31 +25,21 @@ public class MeshOperation : MonoBehaviour
     {
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
         cgMesh.Subdivision(areaThreshold);
-
-        meshFilter.mesh.vertices = cgMesh.GetVertices();
-        meshFilter.mesh.normals = cgMesh.GetNormals();
-        meshFilter.mesh.triangles = cgMesh.GetTriangles();
+        cgMesh.AssignToMesh(meshFilter.mesh);
     }
 
     public void Rearranging(MeshFilter meshFilter)
     {
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
         cgMesh.Rearranging();
-
-        meshFilter.mesh.vertices = cgMesh.GetVertices();
-        meshFilter.mesh.normals = cgMesh.GetNormals();
-        meshFilter.mesh.triangles = cgMesh.GetTriangles();
+        cgMesh.AssignToMesh(meshFilter.mesh);
     }
 
     public void CalculatePosition(MeshFilter meshFilter)
     {
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
         cgMesh.CalculatePos(deltaT);
-
-        meshFilter.mesh.vertices = cgMesh.GetVertices();
-        meshFilter.mesh.normals = cgMesh.GetNormals();
-        meshFilter.mesh.triangles = cgMesh.GetTriangles();
-
+        cgMesh.AssignToMesh(meshFilter.mesh);
     }
 
 }
