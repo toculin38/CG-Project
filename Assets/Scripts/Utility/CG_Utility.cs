@@ -77,7 +77,7 @@ namespace ComputerGraphic
                 {
                     Triangle another = triangles[j];
 
-                    if (triangle.IsLongestEdge((another.A, another.B)) == true && triangle != another)
+                    if (triangle.IsLongestEdge((another.A, another.B)) == true && triangle != another && Vector3.Distance(vertices[another.A], vertices[another.B]) > Vector3.Distance(vertices[another.C], vertices[triangle.C]))
                     {
                         Triangle newTriangle1 = new Triangle((triangle.C, another.C, another.A), vertices);
                         Triangle newTriangle2 = new Triangle((another.C, triangle.C, triangle.A), vertices);
@@ -195,7 +195,7 @@ namespace ComputerGraphic
                     int k = FindNeighbor(triangles[i].A, triangles[i].C, j);
                     surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
                 }
-                else if (triangles[i].A == j)
+                else if (triangles[i].C == j)
                 {
                     int k = FindNeighbor(triangles[i].A, triangles[i].B, j);
                     surroundingNormal[i] = surroundingNormal[i] + normals[triangles[i].A];
