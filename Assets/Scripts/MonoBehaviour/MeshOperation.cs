@@ -13,7 +13,7 @@ public class MeshOperation : MonoBehaviour
     [SerializeField]
     private float deltaT = 0.5f;
 
-    Coroutine InflateCouroutine;
+    private bool animating = false;
 
     void Start()
     {
@@ -27,11 +27,19 @@ public class MeshOperation : MonoBehaviour
 
     public void StartInflate(MeshFilter meshFilter)
     {
-        InflateCouroutine = StartCoroutine(Inflating(meshFilter, deltaT));
+        if (animating)
+        {
+            Debug.Log("Animating!");
+        }
+        else {
+            StartCoroutine(Inflating(meshFilter, deltaT));
+        }
     }
 
     IEnumerator Inflating(MeshFilter meshFilter, float deltaT)
     {
+        animating = true;
+
         Mesh newMesh = new Mesh();
 
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
@@ -65,6 +73,8 @@ public class MeshOperation : MonoBehaviour
             meshFilter.mesh.normals = frameNormals;
             yield return null;
         }
+
+        animating = false;
     }
 
     public void Subdivision(MeshFilter meshFilter)
