@@ -211,7 +211,7 @@ namespace ComputerGraphic
         {
             for (int i = 0; i < triangles.Count; i++)
             {
-                if (triangles[i].ContainsEdge(new ValueTuple<int, int>(index0, index1)) && i != triangleIndex)
+                if (triangles[i].ContainsEdge((index0, index1)) && i != triangleIndex)
                 {
                     return i;
                 }
@@ -219,9 +219,26 @@ namespace ComputerGraphic
             return triangleIndex;
         }
 
-        private Vector3 CalculateGi(int j)
+        private Vector3 CalculateGi(int k)
         {
-            return new Vector3(0.0f, 0.0f, 0.0f);
+            Vector3 Sij = new Vector3(0.0f, 0.0f, 0.0f);
+            Vector3 Rij = new Vector3(0.0f, 0.0f, 0.0f);
+            for(int i = 0; i < vertices.Count; i++)
+            {
+                for(int j = 0; j < triangles.Count && i != k; j++)
+                {
+                    if (triangles[j].ContainsEdge((i, k)))
+                    {
+                        Rij = vertices[i] - vertices[k];
+                        //Rij = Rij.normalized;
+                        Sij = Sij + Rij;
+
+                    }
+                }
+
+            }
+
+            return Sij * 0.02f;
         }
 
         private float EdgeLength(ValueTuple<int, int> edge)
