@@ -9,6 +9,7 @@ public class SimpleMesh : MonoBehaviour
     void Start()
     {
         //畫初始mesh
+        /*
         Mesh mesh = new Mesh();
         mesh.vertices = new Vector3[] {
             new Vector3(-3, -2, 0), new Vector3(-1, 2, 0), new Vector3(2, 2, 0),
@@ -28,6 +29,6 @@ public class SimpleMesh : MonoBehaviour
             5, 6, 9
         };
         mesh.RecalculateNormals();
-        meshFilter.mesh = mesh;
+        meshFilter.mesh = mesh;*/
     }
 }
