@@ -92,23 +92,15 @@ namespace ComputerGraphic
             for (int i = 0; i < triangles.Count; i++)
             {
                 Triangle triangle = triangles[i];
+                Triangle another = triangleTable[(triangle.A, triangle.B)].FirstOrDefault(a =>
+                    triangle.IsSame(a) == false && // not the same triangle
+                    triangle.IsLongestEdge((a.A, a.B)) && //share same longest edge
+                    PointsDistance(a.A, a.B) > PointsDistance(a.C, triangle.C)//need to rearrange
+                    );
 
-                for (int j = i; j < triangles.Count; j++)
+                if (another != default(Triangle))
                 {
-                    Triangle another = triangles[j];
-
-                    bool rearrangeCondition =
-                        triangle.IsLongestEdge((another.A, another.B)) && //share same longest edge
-                        triangle.IsSame(another) == false &&
-                        PointsDistance(another.A, another.B) > PointsDistance(another.C, triangle.C); //prevent repeated
-
-                    if (rearrangeCondition)
-                    {
-                        SetTriangle(i, new Triangle((triangle.C, another.C, another.A), vertices));
-                        SetTriangle(j, new Triangle((another.C, triangle.C, triangle.A), vertices));
-                        break; //We assumed that an edge only composed two triangle at best, so no need to do the rest iteration.
-                    }
-
+                    RearrangeTriangles(triangle, another);
                 }
             }
         }
@@ -136,6 +128,14 @@ namespace ComputerGraphic
             RemoveTriangle(triangle);
             AddTriangle(new Triangle((diagonalPoint, edgePoint1, midVertIndex), vertices));
             AddTriangle(new Triangle((diagonalPoint, midVertIndex, edgePoint2), vertices));
+        }
+
+        private void RearrangeTriangles(Triangle triangleA, Triangle triangleB)
+        {
+            RemoveTriangle(triangleA);
+            RemoveTriangle(triangleB);
+            AddTriangle(new Triangle((triangleA.C, triangleB.C, triangleB.A), vertices));
+            AddTriangle(new Triangle((triangleB.C, triangleA.C, triangleA.A), vertices));
         }
 
         private bool IsMidVertexInDict(int index1, int index2, out uint key, out int value)

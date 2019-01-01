@@ -31,7 +31,8 @@ public class MeshOperation : MonoBehaviour
         {
             Debug.Log("Animating!");
         }
-        else {
+        else
+        {
             StartCoroutine(Inflating(meshFilter, deltaT));
         }
     }
@@ -43,21 +44,17 @@ public class MeshOperation : MonoBehaviour
         Mesh newMesh = new Mesh();
 
         CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
-        cgMesh.Subdivision(areaThreshold);
-        cgMesh.Rearranging();
-        cgMesh.AssignToMesh(meshFilter.mesh);
-
         cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(newMesh);
 
-        Vector3[] startVertices = meshFilter.mesh.vertices.ToArray();
-        Vector3[] startNormals = meshFilter.mesh.normals.ToArray();
+        Vector3[] startVertices = meshFilter.mesh.vertices;
+        Vector3[] startNormals = meshFilter.mesh.normals;
 
-        Vector3[] endVertices = newMesh.vertices.ToArray();
-        Vector3[] endNormals = newMesh.normals.ToArray();
+        Vector3[] endVertices = newMesh.vertices;
+        Vector3[] endNormals = newMesh.normals;
 
-        Vector3[] frameVertices = startVertices.ToArray();
-        Vector3[] frameNormals = startVertices.ToArray();
+        Vector3[] frameVertices = new Vector3[startVertices.Length];
+        Vector3[] frameNormals = new Vector3[startNormals.Length];
 
         for (float dTimer = 0; dTimer < deltaT; dTimer += Time.deltaTime)
         {
@@ -74,6 +71,9 @@ public class MeshOperation : MonoBehaviour
             yield return null;
         }
 
+        cgMesh.Subdivision(areaThreshold);
+        cgMesh.Rearranging();
+        cgMesh.AssignToMesh(meshFilter.mesh);
         animating = false;
     }
 
