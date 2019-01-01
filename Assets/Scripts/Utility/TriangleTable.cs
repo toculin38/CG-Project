@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ComputerGraphic
@@ -75,16 +76,16 @@ namespace ComputerGraphic
             vertDict[key2].Remove(triangle);
             vertDict[key3].Remove(triangle);
 
-            if (vertDict[key1].Count == 0) {
+            if (!vertDict[key1].Any()) {
                 vertDict.Remove(key1);
             }
 
-            if (vertDict[key2].Count == 0)
+            if (!vertDict[key2].Any())
             {
                 vertDict.Remove(key2);
             }
 
-            if (vertDict[key3].Count == 0)
+            if (!vertDict[key3].Any())
             {
                 vertDict.Remove(key3);
             }
@@ -125,17 +126,17 @@ namespace ComputerGraphic
             edgeDict[key2].Remove(triangle);
             edgeDict[key3].Remove(triangle);
 
-            if (edgeDict[key1].Count == 0)
+            if (!edgeDict[key1].Any())
             {
                 edgeDict.Remove(key1);
             }
 
-            if (edgeDict[key2].Count == 0)
+            if (!edgeDict[key2].Any())
             {
                 edgeDict.Remove(key2);
             }
 
-            if (edgeDict[key3].Count == 0)
+            if (!edgeDict[key3].Any())
             {
                 edgeDict.Remove(key3);
             }

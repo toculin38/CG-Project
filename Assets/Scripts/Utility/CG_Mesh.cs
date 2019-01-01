@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static ComputerGraphic.TriangleTable;
 
 namespace ComputerGraphic
 {
@@ -107,7 +106,7 @@ namespace ComputerGraphic
                     {
                         SetTriangle(i, new Triangle((triangle.C, another.C, another.A), vertices));
                         SetTriangle(j, new Triangle((another.C, triangle.C, triangle.A), vertices));
-                        break;
+                        break; //We assumed that an edge only composed two triangle at best, so no need to do the rest iteration.
                     }
 
                 }
