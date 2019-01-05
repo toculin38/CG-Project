@@ -11,12 +11,14 @@ public class MeshOperation : MonoBehaviour
     MeshFilter icoMeshFilter;
     [SerializeField]
     MeshFilter objMeshFilter;
+    [SerializeField]
+    MeshCollider meshCollider;
 
     [Header("Parameters")]
     [SerializeField]
     private float areaThreshold;
     [SerializeField]
-    private float deltaT = 0.5f;
+    private float deltaT;
 
     private bool animating = false;
 
@@ -51,7 +53,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
         //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objMeshFilter.mesh.triangles);
 
         cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(newMesh);
@@ -93,7 +95,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
         //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objMeshFilter.mesh.triangles);
         cgMesh.Subdivision(areaThreshold);
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
@@ -105,7 +107,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
         //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objMeshFilter.mesh.triangles);
         cgMesh.Rearranging();
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
@@ -117,7 +119,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
         //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objMeshFilter.mesh.triangles);
         cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
