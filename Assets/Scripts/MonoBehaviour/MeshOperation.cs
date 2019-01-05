@@ -6,8 +6,13 @@ using UnityEngine;
 
 public class MeshOperation : MonoBehaviour
 {
-    [Header("Parameters")]
+    [Header("Object reference")]
+    [SerializeField]
+    MeshFilter icoMeshFilter;
+    [SerializeField]
+    MeshFilter objMeshFilter;
 
+    [Header("Parameters")]
     [SerializeField]
     private float areaThreshold;
     [SerializeField]
@@ -25,7 +30,7 @@ public class MeshOperation : MonoBehaviour
 
     }
 
-    public void StartInflate(MeshFilter meshFilter)
+    public void StartInflate()
     {
         if (animating)
         {
@@ -33,22 +38,26 @@ public class MeshOperation : MonoBehaviour
         }
         else
         {
-            StartCoroutine(Inflating(meshFilter, deltaT));
+            StartCoroutine(Inflating(deltaT));
         }
     }
 
-    IEnumerator Inflating(MeshFilter meshFilter, float deltaT)
+    IEnumerator Inflating(float deltaT)
     {
         animating = true;
 
         Mesh newMesh = new Mesh();
+        //把兔子的局部座標點(local)轉成世界座標點(world)
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
 
-        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
         cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(newMesh);
 
-        Vector3[] startVertices = meshFilter.mesh.vertices;
-        Vector3[] startNormals = meshFilter.mesh.normals;
+        Vector3[] startVertices = icoMeshFilter.mesh.vertices;
+        Vector3[] startNormals = icoMeshFilter.mesh.normals;
 
         Vector3[] endVertices = newMesh.vertices;
         Vector3[] endNormals = newMesh.normals;
@@ -66,36 +75,51 @@ public class MeshOperation : MonoBehaviour
                 frameNormals[i] = Vector3.Lerp(startNormals[i], endNormals[i], lerpRatio);
             }
 
-            meshFilter.mesh.vertices = frameVertices;
-            meshFilter.mesh.normals = frameNormals;
+            icoMeshFilter.mesh.vertices = frameVertices;
+            icoMeshFilter.mesh.normals = frameNormals;
             yield return null;
         }
 
         cgMesh.Subdivision(areaThreshold);
         cgMesh.Rearranging();
-        cgMesh.AssignToMesh(meshFilter.mesh);
+        cgMesh.AssignToMesh(icoMeshFilter.mesh);
         animating = false;
     }
 
-    public void Subdivision(MeshFilter meshFilter)
+    public void Subdivision()
     {
-        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
+        Mesh newMesh = new Mesh();
+        //把bunny的局部座標點(local)轉成世界座標點(world)
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
         cgMesh.Subdivision(areaThreshold);
-        cgMesh.AssignToMesh(meshFilter.mesh);
+        cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 
-    public void Rearranging(MeshFilter meshFilter)
+    public void Rearranging()
     {
-        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
+        Mesh newMesh = new Mesh();
+        //把bunny的局部座標點(local)轉成世界座標點(world)
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
         cgMesh.Rearranging();
-        cgMesh.AssignToMesh(meshFilter.mesh);
+        cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 
-    public void CalculatePosition(MeshFilter meshFilter)
+    public void CalculatePosition()
     {
-        CG_Mesh cgMesh = new CG_Mesh(meshFilter.mesh);
+        Mesh newMesh = new Mesh();
+        //把bunny的局部座標點(local)轉成世界座標點(world)
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices);
         cgMesh.CalculatePos(deltaT);
-        cgMesh.AssignToMesh(meshFilter.mesh);
+        cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 
 }

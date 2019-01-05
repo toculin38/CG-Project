@@ -8,6 +8,8 @@ namespace ComputerGraphic
 {
     public class CG_Mesh
     {
+        private Vector3[] objVertices;
+
         private List<Vector3> vertices = new List<Vector3>();
         private List<Vector3> normals = new List<Vector3>();
         private List<Triangle> triangles = new List<Triangle>();// the triangles composed this mesh
@@ -15,8 +17,10 @@ namespace ComputerGraphic
 
         private TriangleTable triangleTable = new TriangleTable();
 
-        public CG_Mesh(Mesh mesh)
+        public CG_Mesh(Mesh mesh, Vector3[] objVertices)
         {
+            this.objVertices = objVertices;
+
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
 
@@ -26,15 +30,6 @@ namespace ComputerGraphic
             {
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
             }
-        }
-
-        private void SetTriangle(int index, Triangle triangle)
-        {
-            Triangle oldTriangle = triangles[index];
-            triangles[index] = triangle;
-
-            triangleTable.Remove(oldTriangle);
-            triangleTable.Add(triangle);
         }
 
         private void AddTriangle(Triangle triangle)
