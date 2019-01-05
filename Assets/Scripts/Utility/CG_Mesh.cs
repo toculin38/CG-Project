@@ -9,6 +9,7 @@ namespace ComputerGraphic
     public class CG_Mesh
     {
         private Vector3[] objVertices;
+        private List<Triangle> objTriangles = new List<Triangle>();// the triangles composed this mesh
 
         private List<Vector3> vertices = new List<Vector3>();
         private List<Vector3> normals = new List<Vector3>();
@@ -17,7 +18,7 @@ namespace ComputerGraphic
 
         private TriangleTable triangleTable = new TriangleTable();
 
-        public CG_Mesh(Mesh mesh, Vector3[] objVertices)
+        public CG_Mesh(Mesh mesh, Vector3[] objVertices, int[] objIndices)
         {
             this.objVertices = objVertices;
 
@@ -29,6 +30,10 @@ namespace ComputerGraphic
             for (int i = 0; i + 2 < indices.Length; i += 3)
             {
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
+            }
+            for (int i = 0; i + 2 < objIndices.Length; i += 3)
+            {
+                objTriangles.Add(new Triangle((objIndices[i], objIndices[i + 1], objIndices[i + 2]), objVertices.ToList()));
             }
         }
 
@@ -183,7 +188,16 @@ namespace ComputerGraphic
                 Vector3 fi = CalculateFi(triangleIndex, i);
                 Vector3 gi = CalculateGi(i);
 
-                vertices[i] = vertices[i] + deltaT * (fi - gi);
+                Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
+                Vector3 intersection = FindIntersection(i);
+                if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
+                {
+                    vertices[i] = intersection;
+                }
+                else
+                {
+                    vertices[i] = nextPos;
+                }
             }
         }
 
@@ -256,6 +270,25 @@ namespace ComputerGraphic
         private float PointsDistance(int v1, int v2)
         {
             return Vector3.Distance(vertices[v1], vertices[v2]);
+        }
+
+        public Vector3 FindIntersection(int j)
+        {
+            Vector3 intersection = Vector3.zero;
+            
+            Ray ray = new Ray(vertices[j], normals[j]);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+            Debug.Log("hit數: " + hits.Length);
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                RaycastHit hit = hits[i];
+                intersection = hit.point;
+                Debug.Log("坐標: " + hit.point);
+                break;
+            }
+            
+            return intersection;
         }
     }
 }
