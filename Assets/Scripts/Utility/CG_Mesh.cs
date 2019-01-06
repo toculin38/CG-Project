@@ -8,7 +8,6 @@ namespace ComputerGraphic
 {
     public class CG_Mesh
     {
-        private List<bool> isVertexAnchored = new List<bool>();
         private Vector3[] objVertices;
         private int[] objTriangles;
 
@@ -23,7 +22,7 @@ namespace ComputerGraphic
         {
             this.objVertices = objVertices;
             this.objTriangles = objTriangles;
-            this.isVertexAnchored = isVertexAnchored;
+            //this.isVertexAnchored = isVertexAnchored;
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
             int[] indices = mesh.triangles;
@@ -62,15 +61,10 @@ namespace ComputerGraphic
                     if (triangleTable.ContainsEdge(edge))
                     {
                         Triangle[] neighbors = triangleTable[edge];
-                        int anchoredTriangleNum = 0;
+
                         foreach (var triangle in neighbors)
                         {
-                            if (isVertexAnchored[triangle.A] && isVertexAnchored[triangle.B] && isVertexAnchored[triangle.C])
-                            {
-                                anchoredTriangleNum = anchoredTriangleNum + 1;
-                            }
-                            else
-                            {
+
                                 if (triangle.IsLongestEdge(edge))
                                 {
                                     SubdivideTriangle(triangle);
@@ -79,13 +73,10 @@ namespace ComputerGraphic
                                 {
                                     nonConfirmEdges.Add((triangle.A, triangle.B));
                                 }
-                            }
+                            
 
                         }
-                        if (anchoredTriangleNum == neighbors.Length)
-                        {
-                            nonConfirmEdges.Remove(edge);
-                        }
+
                     }
                     else
                     {
@@ -98,7 +89,7 @@ namespace ComputerGraphic
 
         public void Rearranging()
         {
-            for (int i = 0; i < triangles.Count && !(isVertexAnchored[triangles[i].A] && isVertexAnchored[triangles[i].B] && isVertexAnchored[triangles[i].C]); i++)
+            for (int i = 0; i < triangles.Count; i++)
             {
                 Triangle triangle = triangles[i];
                 Triangle another = triangleTable[(triangle.A, triangle.B)].FirstOrDefault(a =>
@@ -132,7 +123,6 @@ namespace ComputerGraphic
                 midVectices.Add(key, midVertIndex);
                 vertices.Add((vertices[edgePoint1] + vertices[edgePoint2]) * 0.5f);
                 normals.Add((normals[edgePoint1] + normals[edgePoint2]).normalized);
-                isVertexAnchored.Add(false);
             }
 
             RemoveTriangle(triangle);
@@ -182,9 +172,9 @@ namespace ComputerGraphic
             return crossVector.magnitude * 0.5f;
         }
 
-        public List<bool> CalculatePos(float deltaT)
+        public void CalculatePos(float deltaT)
         {
-            for (int i = 0; i < vertices.Count && !isVertexAnchored[i]; i++)
+            for (int i = 0; i < vertices.Count; i++)
             {
                 List<int> triangleIndex = new List<int>();
                 for (int j = 0; j < triangles.Count; j++)
@@ -209,7 +199,6 @@ namespace ComputerGraphic
                     {
                         Debug.Log("與交點距離:" + Vector3.Distance(vertices[i], intersection) + " ;與下一個位置距離:" + Vector3.Distance(vertices[i], nextPos));
                         vertices[i] = intersection;
-                        isVertexAnchored[i] = true;
                     }
                     else
                     {
@@ -220,11 +209,8 @@ namespace ComputerGraphic
                 {
                     vertices[i] = nextPos;
                 }
-
-
-
             }
-            return isVertexAnchored;
+
         }
 
         private Vector3 CalculateFi(List<int> triangleIndex, int j)
@@ -283,7 +269,7 @@ namespace ComputerGraphic
             {
                 bool isAnEdge = triangleTable.ContainsEdge((i, j));
 
-                if (isAnEdge && !isVertexAnchored[j])
+                if (isAnEdge)
                 {
                     Rij = vertices[j] - vertices[i];
                     Sij = Sij + Rij;
@@ -350,7 +336,7 @@ namespace ComputerGraphic
             u = v1 - v0;
             v = v2 - v0;
 
-            //Table是否存在以計算過的資訊
+            //Table是否存在已計算過的資訊
             if (objRayTriangleTable.ContainsKey((v0, v1, v2)))
             {
                 RayTriangleInfo info = objRayTriangleTable[(v0, v1, v2)];
@@ -387,6 +373,15 @@ namespace ComputerGraphic
             w0 = ray.origin - v0;
             a = -Vector3.Dot(n, w0);
             b = Vector3.Dot(n, dir);
+
+            // ray is  parallel to triangle plane
+            if (Mathf.Abs(b) < 0.0000001f)
+            {
+                return a == 0 ? true : false;
+                // true : ray lies in triangle plane
+                // false : ray disjoint from plane
+            }
+
 
             // get intersect point of ray with triangle plane
             r = a / b;

@@ -47,7 +47,40 @@ public class MeshOperation : MonoBehaviour
 
     void Update()
     {
+        DrawApple();
+        DrawIco();
+    }
 
+    void DrawApple()
+    {
+        Vector3[] vertices = objMeshFilter.mesh.vertices;
+        int[] triangles = objMeshFilter.mesh.triangles;
+
+        for (int i = 0; i + 2 < triangles.Length; i += 3)
+        {
+            Vector3 v0 = objMeshFilter.transform.TransformPoint(vertices[triangles[i]]);
+            Vector3 v1 = objMeshFilter.transform.TransformPoint(vertices[triangles[i + 1]]);
+            Vector3 v2 = objMeshFilter.transform.TransformPoint(vertices[triangles[i + 2]]);
+            Debug.DrawLine(v0, v1, Color.blue);
+            Debug.DrawLine(v1, v2, Color.blue);
+            Debug.DrawLine(v2, v0, Color.blue);
+        }
+    }
+
+    void DrawIco()
+    {
+        Vector3[] vertices = icoMeshFilter.mesh.vertices;
+        int[] triangles = icoMeshFilter.mesh.triangles;
+
+        for (int i = 0; i + 2 < triangles.Length; i += 3)
+        {
+            Vector3 v0 = icoMeshFilter.transform.TransformPoint(vertices[triangles[i]]);
+            Vector3 v1 = icoMeshFilter.transform.TransformPoint(vertices[triangles[i + 1]]);
+            Vector3 v2 = icoMeshFilter.transform.TransformPoint(vertices[triangles[i + 2]]);
+            Debug.DrawLine(v0, v1, Color.red);
+            Debug.DrawLine(v1, v2, Color.red);
+            Debug.DrawLine(v2, v0, Color.red);
+        }
     }
 
     public void StartInflate()
@@ -73,7 +106,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
         int[] objTriangles = objMeshFilter.mesh.triangles;
         CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
-        isVertexAnchored = cgMesh.CalculatePos(deltaT);
+        cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(newMesh);
 
         Vector3[] startVertices = icoMeshFilter.mesh.vertices;
@@ -132,7 +165,7 @@ public class MeshOperation : MonoBehaviour
         Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
         int[] objTriangles = objMeshFilter.mesh.triangles;
         CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
-        isVertexAnchored = cgMesh.CalculatePos(deltaT);
+        cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 

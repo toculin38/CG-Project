@@ -76,7 +76,8 @@ namespace ComputerGraphic
             vertDict[key2].Remove(triangle);
             vertDict[key3].Remove(triangle);
 
-            if (!vertDict[key1].Any()) {
+            if (!vertDict[key1].Any())
+            {
                 vertDict.Remove(key1);
             }
 
@@ -122,9 +123,12 @@ namespace ComputerGraphic
             ValueTuple<int, int> key1 = EdgeToKey((triangle.A, triangle.B));
             ValueTuple<int, int> key2 = EdgeToKey((triangle.B, triangle.C));
             ValueTuple<int, int> key3 = EdgeToKey((triangle.C, triangle.A));
+
+
             edgeDict[key1].Remove(triangle);
             edgeDict[key2].Remove(triangle);
             edgeDict[key3].Remove(triangle);
+
 
             if (!edgeDict[key1].Any())
             {
