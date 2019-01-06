@@ -185,8 +185,8 @@ namespace ComputerGraphic
 
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
 
-                
-                if (IsPointInsideObjMesh(vertices[i], out Vector3 intersection))
+
+                if (IsVertexInObjMesh(vertices[i], normals[i], out Vector3 intersection))
                 {
 
                 }
@@ -199,6 +199,7 @@ namespace ComputerGraphic
                 {
                     vertices[i] = nextPos;
                 }
+
             }
         }
 
@@ -273,15 +274,15 @@ namespace ComputerGraphic
             return Vector3.Distance(vertices[v1], vertices[v2]);
         }
 
-        bool IsPointInsideObjMesh(Vector3 point, out Vector3 firstIntersect)
+        bool IsVertexInObjMesh(Vector3 vertex, Vector3 normal, out Vector3 firstIntersect)
         {
             Vector3[] objVertices = objMesh.vertices;
             int[] indices = objMesh.triangles;
 
-            Ray ray = new Ray(point, Vector3.up);
+            Ray ray = new Ray(vertex, normal);
             int hitCount = 0;
 
-            firstIntersect = point;
+            firstIntersect = vertex;
 
             for (int i = 0; i + 2 < indices.Length; i += 3)
             {
@@ -303,6 +304,17 @@ namespace ComputerGraphic
             return hitCount % 2 == 1;
         }
 
+        struct RayTriangleInfo
+        {
+            public Vector3 n;
+            public float uu;
+            public float uv;
+            public float vv;
+            public float D;
+        }
+
+        Dictionary<ValueTuple<Vector3, Vector3, Vector3>, RayTriangleInfo> objRayTriangleTable = new Dictionary<(Vector3, Vector3, Vector3), RayTriangleInfo>();
+
         bool Intersect3D_RayTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out Vector3 intersectPoint)
         {
             intersectPoint = default(Vector3);
@@ -311,10 +323,41 @@ namespace ComputerGraphic
             Vector3 dir, w0, w;           // ray vectors
             float r, a, b;              // params to calc ray-plane intersect
 
+            float uu, uv, vv, wu, wv, D;
+
             // get triangle edge vectors and plane normal
             u = v1 - v0;
             v = v2 - v0;
-            n = Vector3.Cross(u, v);              // cross product
+
+            //Table是否存在以計算過的資訊
+            if (objRayTriangleTable.ContainsKey((v0, v1, v2)))
+            {
+                RayTriangleInfo info = objRayTriangleTable[(v0, v1, v2)];
+                n = info.n;
+                uu = info.uu;
+                uv = info.uv;
+                vv = info.vv;
+                D = info.D;
+            }
+            else
+            {
+                n = Vector3.Cross(u, v);              // cross product
+                uu = Vector3.Dot(u, u);
+                uv = Vector3.Dot(u, v);
+                vv = Vector3.Dot(v, v);
+                D = uv * uv - uu * vv;
+
+                RayTriangleInfo info = new RayTriangleInfo()
+                {
+                    n = n,
+                    uu = uu,
+                    uv = uv,
+                    vv = vv,
+                    D = D
+                };
+
+                objRayTriangleTable.Add((v0, v1, v2), info);
+            }
 
             if (n == Vector3.zero)             // triangle is degenerate
                 return false;                  // do not deal with this case
@@ -326,6 +369,7 @@ namespace ComputerGraphic
 
             // get intersect point of ray with triangle plane
             r = a / b;
+
             if (r < 0.0)
             {                // ray goes away from triangle
                 return false;                   // => no intersect
@@ -334,14 +378,9 @@ namespace ComputerGraphic
             intersectPoint = ray.origin + r * dir;            // intersect point of ray and plane
 
             // is intersect point inside Triangle?
-            float uu, uv, vv, wu, wv, D;
-            uu = Vector3.Dot(u, u);
-            uv = Vector3.Dot(u, v);
-            vv = Vector3.Dot(v, v);
             w = intersectPoint - v0;
             wu = Vector3.Dot(w, u);
             wv = Vector3.Dot(w, v);
-            D = uv * uv - uu * vv;
 
             // get and test parametric coords
             float s, t;
