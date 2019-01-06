@@ -8,8 +8,7 @@ namespace ComputerGraphic
 {
     public class CG_Mesh
     {
-        private Vector3[] objVertices;
-        private List<Triangle> objTriangles = new List<Triangle>();// the triangles composed this mesh
+        private Mesh objMesh;
 
         private List<Vector3> vertices = new List<Vector3>();
         private List<Vector3> normals = new List<Vector3>();
@@ -18,9 +17,9 @@ namespace ComputerGraphic
 
         private TriangleTable triangleTable = new TriangleTable();
 
-        public CG_Mesh(Mesh mesh, Vector3[] objVertices, int[] objIndices)
+        public CG_Mesh(Mesh mesh, Mesh objMesh)
         {
-            this.objVertices = objVertices;
+            this.objMesh = objMesh;
 
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
@@ -30,10 +29,6 @@ namespace ComputerGraphic
             for (int i = 0; i + 2 < indices.Length; i += 3)
             {
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
-            }
-            for (int i = 0; i + 2 < objIndices.Length; i += 3)
-            {
-                objTriangles.Add(new Triangle((objIndices[i], objIndices[i + 1], objIndices[i + 2]), objVertices.ToList()));
             }
         }
 
@@ -189,7 +184,13 @@ namespace ComputerGraphic
                 Vector3 gi = CalculateGi(i);
 
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
-                Vector3 intersection = FindIntersection(i);
+
+                /*
+                if (IsPointInsideObjMesh(vertices[i], out Vector3 intersection))
+                {
+
+                }
+
                 if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
                 {
                     vertices[i] = intersection;
@@ -197,7 +198,9 @@ namespace ComputerGraphic
                 else
                 {
                     vertices[i] = nextPos;
-                }
+                }*/
+
+                vertices[i] = nextPos;
             }
         }
 
@@ -272,23 +275,92 @@ namespace ComputerGraphic
             return Vector3.Distance(vertices[v1], vertices[v2]);
         }
 
-        public Vector3 FindIntersection(int j)
+        bool IsPointInsideObjMesh(Vector3 point, out Vector3 firstIntersect)
         {
-            Vector3 intersection = Vector3.zero;
-            
-            Ray ray = new Ray(vertices[j], normals[j]);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-            Debug.Log("hit數: " + hits.Length);
+            Vector3[] objVertices = objMesh.vertices;
+            int[] indices = objMesh.triangles;
 
-            for (int i = 0; i < hits.Length; i++)
+            Ray ray = new Ray(point, Vector3.up);
+            int hitCount = 0;
+
+            firstIntersect = point;
+
+            for (int i = 0; i + 2 < indices.Length; i += 3)
             {
-                RaycastHit hit = hits[i];
-                intersection = hit.point;
-                Debug.Log("坐標: " + hit.point);
-                break;
+                Vector3 v0 = objVertices[indices[i]];
+                Vector3 v1 = objVertices[indices[i + 1]];
+                Vector3 v2 = objVertices[indices[i + 2]];
+
+                if (Intersect3D_RayTriangle(ray, v0, v1, v2, out Vector3 vi))
+                {
+                    if (hitCount == 0)
+                    {
+                        firstIntersect = vi;
+                    }
+
+                    hitCount++;
+                }
             }
-            
-            return intersection;
+
+            return hitCount % 2 == 1;
         }
+
+        bool Intersect3D_RayTriangle(Ray ray, Vector3 v0, Vector3 v1, Vector3 v2, out Vector3 intersectPoint)
+        {
+            intersectPoint = default(Vector3);
+
+            Vector3 u, v, n;              // triangle vectors
+            Vector3 dir, w0, w;           // ray vectors
+            float r, a, b;              // params to calc ray-plane intersect
+
+            // get triangle edge vectors and plane normal
+            u = v1 - v0;
+            v = v2 - v0;
+            n = Vector3.Cross(u, v);              // cross product
+
+            if (n == Vector3.zero)             // triangle is degenerate
+                return false;                  // do not deal with this case
+
+            dir = ray.direction;              // ray direction vector
+            w0 = ray.origin - v0;
+            a = -Vector3.Dot(n, w0);
+            b = Vector3.Dot(n, dir);
+
+            // get intersect point of ray with triangle plane
+            r = a / b;
+            if (r < 0.0)
+            {                // ray goes away from triangle
+                return false;                   // => no intersect
+            }              // for a segment, also test if (r > 1.0) => no intersect
+
+            intersectPoint = ray.origin + r * dir;            // intersect point of ray and plane
+
+            // is intersect point inside Triangle?
+            float uu, uv, vv, wu, wv, D;
+            uu = Vector3.Dot(u, u);
+            uv = Vector3.Dot(u, v);
+            vv = Vector3.Dot(v, v);
+            w = intersectPoint - v0;
+            wu = Vector3.Dot(w, u);
+            wv = Vector3.Dot(w, v);
+            D = uv * uv - uu * vv;
+
+            // get and test parametric coords
+            float s, t;
+            s = (uv * wv - vv * wu) / D;
+            if (s < 0.0 || s > 1.0)
+            {
+                return false;// intersect point is outside Triangle
+            }
+
+            t = (uv * wu - uu * wv) / D;
+            if (t < 0.0 || (s + t) > 1.0)
+            {
+                return false;// intersect point is outside Triangle
+            }
+
+            return true;// intersect point is in Triangle
+        }
+
     }
 }
