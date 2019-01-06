@@ -11,6 +11,7 @@ namespace ComputerGraphic
         private Vector3[] objVertices;
         private int[] objTriangles;
 
+        private List<bool> isVertexAnchored = new List<bool>();
         private List<Vector3> vertices = new List<Vector3>();
         private List<Vector3> normals = new List<Vector3>();
         private List<Triangle> triangles = new List<Triangle>();// the triangles composed this mesh
@@ -22,7 +23,7 @@ namespace ComputerGraphic
         {
             this.objVertices = objVertices;
             this.objTriangles = objTriangles;
-            //this.isVertexAnchored = isVertexAnchored;
+            this.isVertexAnchored = isVertexAnchored;
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
             int[] indices = mesh.triangles;
@@ -64,8 +65,8 @@ namespace ComputerGraphic
 
                         foreach (var triangle in neighbors)
                         {
-
-                                if (triangle.IsLongestEdge(edge))
+                            // && triangle.A != triangle.B && triangle.A != triangle.C && triangle.B != triangle.C
+                            if (triangle.IsLongestEdge(edge))
                                 {
                                     SubdivideTriangle(triangle);
                                 }
@@ -91,6 +92,10 @@ namespace ComputerGraphic
         {
             for (int i = 0; i < triangles.Count; i++)
             {
+                if (isVertexAnchored[triangles[i].A] && isVertexAnchored[triangles[i].B] && isVertexAnchored[triangles[i].C])
+                {
+                    continue;
+                }
                 Triangle triangle = triangles[i];
                 Triangle another = triangleTable[(triangle.A, triangle.B)].FirstOrDefault(a =>
                     triangle.IsSame(a) == false && // not the same triangle
@@ -98,7 +103,7 @@ namespace ComputerGraphic
                     PointsDistance(a.A, a.B) > PointsDistance(a.C, triangle.C)//need to rearrange
                     );
 
-                if (another != default(Triangle))
+                if (another != default(Triangle) && triangle.A != triangle.B && triangle.A != triangle.C && triangle.B != triangle.C  && another.A != another.B && another.A != another.C && another.B != another.C)
                 {
                     RearrangeTriangles(triangle, another);
                 }
@@ -123,9 +128,10 @@ namespace ComputerGraphic
                 midVectices.Add(key, midVertIndex);
                 vertices.Add((vertices[edgePoint1] + vertices[edgePoint2]) * 0.5f);
                 normals.Add((normals[edgePoint1] + normals[edgePoint2]).normalized);
+                isVertexAnchored.Add(false);
             }
+                RemoveTriangle(triangle);
 
-            RemoveTriangle(triangle);
             AddTriangle(new Triangle((diagonalPoint, edgePoint1, midVertIndex), vertices));
             AddTriangle(new Triangle((diagonalPoint, midVertIndex, edgePoint2), vertices));
         }
@@ -176,6 +182,10 @@ namespace ComputerGraphic
         {
             for (int i = 0; i < vertices.Count; i++)
             {
+                if (isVertexAnchored[i])
+                {
+                    continue;
+                }
                 List<int> triangleIndex = new List<int>();
                 for (int j = 0; j < triangles.Count; j++)
                 {
@@ -192,23 +202,25 @@ namespace ComputerGraphic
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
 
 
-                if (IsVertexInObjMesh(vertices[i], normals[i], out Vector3 intersection))
+                if (IsVertexInObjMesh(vertices[i], nextPos - vertices[i], out Vector3 intersection))
                 {
 
                     if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
                     {
-                        Debug.Log("與交點距離:" + Vector3.Distance(vertices[i], intersection) + " ;與下一個位置距離:" + Vector3.Distance(vertices[i], nextPos));
                         vertices[i] = intersection;
+                        isVertexAnchored[i] = true;
                     }
                     else
                     {
                         vertices[i] = nextPos;
                     }
                 }
+                /*
                 else
                 {
                     vertices[i] = nextPos;
                 }
+                */
             }
 
         }
