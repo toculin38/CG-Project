@@ -186,7 +186,6 @@ namespace ComputerGraphic
         {
             for (int i = 0; i < vertices.Count && !isVertexAnchored[i]; i++)
             {
-                /*
                 List<int> triangleIndex = new List<int>();
                 for (int j = 0; j < triangles.Count; j++)
                 {
@@ -195,10 +194,9 @@ namespace ComputerGraphic
                         triangleIndex.Add(j);
                     }
                 }
-                */
 
-                //Vector3 fi = CalculateFi(triangleIndex, i);
-                Vector3 fi = normals[i];
+                Vector3 fi = CalculateFi(triangleIndex, i);
+                //Vector3 fi = normals[i];
                 Vector3 gi = CalculateGi(i);
 
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
@@ -209,7 +207,7 @@ namespace ComputerGraphic
 
                     if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
                     {
-                        //Debug.Log("與交點距離:" + Vector3.Distance(vertices[i], intersection) + " ;與下一個位置距離:" + Vector3.Distance(vertices[i], nextPos));
+                        Debug.Log("與交點距離:" + Vector3.Distance(vertices[i], intersection) + " ;與下一個位置距離:" + Vector3.Distance(vertices[i], nextPos));
                         vertices[i] = intersection;
                         isVertexAnchored[i] = true;
                     }
@@ -239,19 +237,19 @@ namespace ComputerGraphic
 
                 if (triangles[i].A == j)
                 {
-                    surroundingNormal = FindNeighborNormal(triangles[i].B, triangles[i].C);
+                    surroundingNormal = normals[j] + FindNeighborNormal(triangles[i].B, triangles[i].C);
                 }
                 else if (triangles[i].B == j)
                 {
-                    surroundingNormal = FindNeighborNormal(triangles[i].A, triangles[i].C);
+                    surroundingNormal = normals[j] + FindNeighborNormal(triangles[i].A, triangles[i].C);
                 }
                 else if (triangles[i].C == j)
                 {
-                    surroundingNormal = FindNeighborNormal(triangles[i].A, triangles[i].B);
+                    surroundingNormal = normals[j] + FindNeighborNormal(triangles[i].A, triangles[i].B);
                 }
 
 
-                inflationForce = inflationForce + surroundingNormal;
+                inflationForce = inflationForce + surroundingNormal.normalized;
             }
 
             inflationForce = inflationForce.normalized;
@@ -285,14 +283,14 @@ namespace ComputerGraphic
             {
                 bool isAnEdge = triangleTable.ContainsEdge((i, j));
 
-                if (isAnEdge)
+                if (isAnEdge && !isVertexAnchored[j])
                 {
                     Rij = vertices[j] - vertices[i];
                     Sij = Sij + Rij;
                 }
             }
 
-            return Sij.normalized * 0.1f;
+            return Sij.normalized * 0.15f;
         }
 
         private float PointsDistance(int v1, int v2)
