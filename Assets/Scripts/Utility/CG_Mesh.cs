@@ -8,6 +8,7 @@ namespace ComputerGraphic
 {
     public class CG_Mesh
     {
+        private List<bool> isVertexAnchored = new List<bool>();
         private Mesh objMesh;
 
         private List<Vector3> vertices = new List<Vector3>();
@@ -17,19 +18,20 @@ namespace ComputerGraphic
 
         private TriangleTable triangleTable = new TriangleTable();
 
-        public CG_Mesh(Mesh mesh, Mesh objMesh)
+        public CG_Mesh(Mesh mesh, Mesh objMesh, List<bool> isVertexAnchored)
         {
             this.objMesh = objMesh;
-
+            this.isVertexAnchored = isVertexAnchored;
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
-
             int[] indices = mesh.triangles;
 
             for (int i = 0; i + 2 < indices.Length; i += 3)
             {
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
             }
+
+            
         }
 
         private void AddTriangle(Triangle triangle)
@@ -60,17 +62,29 @@ namespace ComputerGraphic
                     if (triangleTable.ContainsEdge(edge))
                     {
                         Triangle[] neighbors = triangleTable[edge];
-
+                        int anchoredTriangleNum = 0;
                         foreach (var triangle in neighbors)
                         {
-                            if (triangle.IsLongestEdge(edge))
+                            if(isVertexAnchored[triangle.A] && isVertexAnchored[triangle.B] && isVertexAnchored[triangle.C])
                             {
-                                SubdivideTriangle(triangle);
+                                anchoredTriangleNum = anchoredTriangleNum + 1;
                             }
                             else
                             {
-                                nonConfirmEdges.Add((triangle.A, triangle.B));
+                                if (triangle.IsLongestEdge(edge))
+                                {
+                                    SubdivideTriangle(triangle);
+                                }
+                                else
+                                {
+                                    nonConfirmEdges.Add((triangle.A, triangle.B));
+                                }
                             }
+                           
+                        }
+                        if (anchoredTriangleNum == neighbors.Length)
+                        {
+                            nonConfirmEdges.Remove(edge);
                         }
                     }
                     else
@@ -84,7 +98,7 @@ namespace ComputerGraphic
 
         public void Rearranging()
         {
-            for (int i = 0; i < triangles.Count; i++)
+            for (int i = 0; i < triangles.Count && !(isVertexAnchored[triangles[i].A] && isVertexAnchored[triangles[i].B] && isVertexAnchored[triangles[i].C]); i++)
             {
                 Triangle triangle = triangles[i];
                 Triangle another = triangleTable[(triangle.A, triangle.B)].FirstOrDefault(a =>
@@ -118,6 +132,7 @@ namespace ComputerGraphic
                 midVectices.Add(key, midVertIndex);
                 vertices.Add((vertices[edgePoint1] + vertices[edgePoint2]) * 0.5f);
                 normals.Add((normals[edgePoint1] + normals[edgePoint2]).normalized);
+                isVertexAnchored.Add(false);
             }
 
             RemoveTriangle(triangle);
@@ -167,10 +182,11 @@ namespace ComputerGraphic
             return crossVector.magnitude * 0.5f;
         }
 
-        public void CalculatePos(float deltaT)
+        public List<bool> CalculatePos(float deltaT)
         {
-            for (int i = 0; i < vertices.Count; i++)
+            for (int i = 0; i < vertices.Count && !isVertexAnchored[i]; i++)
             {
+                /*
                 List<int> triangleIndex = new List<int>();
                 for (int j = 0; j < triangles.Count; j++)
                 {
@@ -179,8 +195,10 @@ namespace ComputerGraphic
                         triangleIndex.Add(j);
                     }
                 }
+                */
 
-                Vector3 fi = CalculateFi(triangleIndex, i);
+                //Vector3 fi = CalculateFi(triangleIndex, i);
+                Vector3 fi = normals[i];
                 Vector3 gi = CalculateGi(i);
 
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
@@ -189,27 +207,35 @@ namespace ComputerGraphic
                 if (IsVertexInObjMesh(vertices[i], normals[i], out Vector3 intersection))
                 {
 
-                }
-
-                if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
-                {
-                    vertices[i] = intersection;
+                    if (Vector3.Distance(vertices[i], intersection) < Vector3.Distance(vertices[i], nextPos))
+                    {
+                        //Debug.Log("與交點距離:" + Vector3.Distance(vertices[i], intersection) + " ;與下一個位置距離:" + Vector3.Distance(vertices[i], nextPos));
+                        vertices[i] = intersection;
+                        isVertexAnchored[i] = true;
+                    }
+                    else
+                    {
+                        vertices[i] = nextPos;
+                    }
                 }
                 else
                 {
-                    vertices[i] = nextPos;
+                        vertices[i] = nextPos;
                 }
 
+                
+
             }
+            return isVertexAnchored;
         }
 
         private Vector3 CalculateFi(List<int> triangleIndex, int j)
         {
             Vector3 surroundingNormal = Vector3.zero;
-            Vector3 inflationForce = Vector3.zero;
+            Vector3 inflationForce = normals[j];
             for (int i = 0; i < triangleIndex.Count; i++)
             {
-                surroundingNormal = normals[j];
+                surroundingNormal = Vector3.zero;
 
                 if (triangles[i].A == j)
                 {
@@ -225,7 +251,7 @@ namespace ComputerGraphic
                 }
 
 
-                inflationForce = inflationForce + surroundingNormal.normalized;
+                inflationForce = inflationForce + surroundingNormal;
             }
 
             inflationForce = inflationForce.normalized;
@@ -277,6 +303,7 @@ namespace ComputerGraphic
         bool IsVertexInObjMesh(Vector3 vertex, Vector3 normal, out Vector3 firstIntersect)
         {
             Vector3[] objVertices = objMesh.vertices;
+            
             int[] indices = objMesh.triangles;
 
             Ray ray = new Ray(vertex, normal);
