@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -156,8 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   icoMeshFilter: {fileID: 1600673018}
-  objMeshFilter: {fileID: 1390509344}
-  meshCollider: {fileID: 0}
+  objMeshFilter: {fileID: 191315383}
   areaThreshold: 0.05
   deltaT: 0.06
 --- !u!1001 &191315382
@@ -181,7 +180,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
       propertyPath: m_LocalPosition.z
@@ -233,18 +232,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.03
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.03
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.03
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b0b39d6f770a7524a980f61b5c76f368, type: 3}
+--- !u!33 &191315383 stripped
+MeshFilter:
+  m_CorrespondingSourceObject: {fileID: 3300000, guid: b0b39d6f770a7524a980f61b5c76f368,
+    type: 3}
+  m_PrefabInstance: {fileID: 191315382}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &496103860
 GameObject:
   m_ObjectHideFlags: 0
@@ -1080,12 +1085,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1178460764}
   m_CullTransparentMesh: 0
---- !u!33 &1390509344 stripped
-MeshFilter:
-  m_CorrespondingSourceObject: {fileID: 3300000, guid: 570d5d47d18799d428dc59ce777d4dea,
-    type: 3}
-  m_PrefabInstance: {fileID: 911675972}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1600673017
 GameObject:
   m_ObjectHideFlags: 0
@@ -1158,7 +1157,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1600673017}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

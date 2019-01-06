@@ -11,8 +11,6 @@ public class MeshOperation : MonoBehaviour
     MeshFilter icoMeshFilter;
     [SerializeField]
     MeshFilter objMeshFilter;
-    [SerializeField]
-    MeshCollider meshCollider;
 
     [Header("Parameters")]
     [SerializeField]
@@ -23,14 +21,23 @@ public class MeshOperation : MonoBehaviour
     private bool animating = false;
     private List<bool> isVertexAnchored = new List<bool>();
 
+    private CG_Mesh cgMesh;
+
     void Start()
     {
-        for(int i = 0; i < icoMeshFilter.mesh.vertices.Length; i++)
+        //初始化
+        //把兔子的局部座標點(local)轉成世界座標點(world)
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        int[] objTriangles = objMeshFilter.mesh.triangles;
+
+        cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
+
+        for (int i = 0; i < icoMeshFilter.mesh.vertices.Length; i++)
         {
             isVertexAnchored.Add(false);
         }
-        //StartInflate();
-
     }
 
     void Update()
@@ -55,12 +62,6 @@ public class MeshOperation : MonoBehaviour
         animating = true;
 
         Mesh newMesh = new Mesh();
-        //把兔子的局部座標點(local)轉成世界座標點(world)
-        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
-        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
-        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objMeshFilter.mesh, isVertexAnchored);
-
         isVertexAnchored = cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(newMesh);
 
@@ -96,36 +97,18 @@ public class MeshOperation : MonoBehaviour
 
     public void Subdivision()
     {
-        Mesh newMesh = new Mesh();
-        //把bunny的局部座標點(local)轉成世界座標點(world)
-        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
-        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
-        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objMeshFilter.mesh, isVertexAnchored);
         cgMesh.Subdivision(areaThreshold);
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 
     public void Rearranging()
     {
-        Mesh newMesh = new Mesh();
-        //把bunny的局部座標點(local)轉成世界座標點(world)
-        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
-        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
-        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objMeshFilter.mesh, isVertexAnchored);
         cgMesh.Rearranging();
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }
 
     public void CalculatePosition()
     {
-        Mesh newMesh = new Mesh();
-        //把bunny的局部座標點(local)轉成世界座標點(world)
-        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
-        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
-        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objMeshFilter.mesh, isVertexAnchored);
         isVertexAnchored = cgMesh.CalculatePos(deltaT);
         cgMesh.AssignToMesh(icoMeshFilter.mesh);
     }

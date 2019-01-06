@@ -9,7 +9,8 @@ namespace ComputerGraphic
     public class CG_Mesh
     {
         private List<bool> isVertexAnchored = new List<bool>();
-        private Mesh objMesh;
+        private Vector3[] objVertices;
+        private int[] objTriangles;
 
         private List<Vector3> vertices = new List<Vector3>();
         private List<Vector3> normals = new List<Vector3>();
@@ -18,9 +19,10 @@ namespace ComputerGraphic
 
         private TriangleTable triangleTable = new TriangleTable();
 
-        public CG_Mesh(Mesh mesh, Mesh objMesh, List<bool> isVertexAnchored)
+        public CG_Mesh(Mesh mesh, Vector3[] objVertices, int[] objTriangles, List<bool> isVertexAnchored)
         {
-            this.objMesh = objMesh;
+            this.objVertices = objVertices;
+            this.objTriangles = objTriangles;
             this.isVertexAnchored = isVertexAnchored;
             vertices = mesh.vertices.ToList();
             normals = mesh.normals.ToList();
@@ -31,7 +33,7 @@ namespace ComputerGraphic
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
             }
 
-            
+
         }
 
         private void AddTriangle(Triangle triangle)
@@ -65,7 +67,7 @@ namespace ComputerGraphic
                         int anchoredTriangleNum = 0;
                         foreach (var triangle in neighbors)
                         {
-                            if(isVertexAnchored[triangle.A] && isVertexAnchored[triangle.B] && isVertexAnchored[triangle.C])
+                            if (isVertexAnchored[triangle.A] && isVertexAnchored[triangle.B] && isVertexAnchored[triangle.C])
                             {
                                 anchoredTriangleNum = anchoredTriangleNum + 1;
                             }
@@ -80,7 +82,7 @@ namespace ComputerGraphic
                                     nonConfirmEdges.Add((triangle.A, triangle.B));
                                 }
                             }
-                           
+
                         }
                         if (anchoredTriangleNum == neighbors.Length)
                         {
@@ -220,10 +222,10 @@ namespace ComputerGraphic
                 }
                 else
                 {
-                        vertices[i] = nextPos;
+                    vertices[i] = nextPos;
                 }
 
-                
+
 
             }
             return isVertexAnchored;
@@ -302,20 +304,16 @@ namespace ComputerGraphic
 
         bool IsVertexInObjMesh(Vector3 vertex, Vector3 normal, out Vector3 firstIntersect)
         {
-            Vector3[] objVertices = objMesh.vertices;
-            
-            int[] indices = objMesh.triangles;
-
             Ray ray = new Ray(vertex, normal);
             int hitCount = 0;
 
             firstIntersect = vertex;
 
-            for (int i = 0; i + 2 < indices.Length; i += 3)
+            for (int i = 0; i + 2 < objTriangles.Length; i += 3)
             {
-                Vector3 v0 = objVertices[indices[i]];
-                Vector3 v1 = objVertices[indices[i + 1]];
-                Vector3 v2 = objVertices[indices[i + 2]];
+                Vector3 v0 = objVertices[objTriangles[i]];
+                Vector3 v1 = objVertices[objTriangles[i + 1]];
+                Vector3 v2 = objVertices[objTriangles[i + 2]];
 
                 if (Intersect3D_RayTriangle(ray, v0, v1, v2, out Vector3 vi))
                 {
