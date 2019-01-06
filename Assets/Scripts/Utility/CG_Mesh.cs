@@ -32,8 +32,6 @@ namespace ComputerGraphic
             {
                 AddTriangle(new Triangle((indices[i], indices[i + 1], indices[i + 2]), vertices));
             }
-
-
         }
 
         private void AddTriangle(Triangle triangle)

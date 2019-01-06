@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class MeshOperation : MonoBehaviour
@@ -23,6 +24,21 @@ public class MeshOperation : MonoBehaviour
 
     void Start()
     {
+        /*
+        Mesh newMesh = objMeshFilter.mesh;
+
+        Vector3[] newVertices = newMesh.vertices;
+
+        for (int i = 0; i < newVertices.Length; i++)
+        {
+            newVertices[i] *= 0.04f;
+        }
+
+        newMesh.vertices = newVertices;
+
+        AssetDatabase.CreateAsset(newMesh, "Assets/newApple.mesh" );
+        AssetDatabase.SaveAssets();*/
+        
         for (int i = 0; i < icoMeshFilter.mesh.vertices.Length; i++)
         {
             isVertexAnchored.Add(false);
