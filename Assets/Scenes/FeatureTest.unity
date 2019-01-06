@@ -157,7 +157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icoMeshFilter: {fileID: 1600673018}
   objMeshFilter: {fileID: 1390509344}
-  meshCollider: {fileID: 1390509345}
+  meshCollider: {fileID: 0}
   areaThreshold: 0.1
   deltaT: 0.5
 --- !u!1 &496103860
@@ -661,7 +661,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100002, guid: 570d5d47d18799d428dc59ce777d4dea, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: 570d5d47d18799d428dc59ce777d4dea, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -991,32 +991,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1178460764}
   m_CullTransparentMesh: 0
---- !u!1 &1390509341 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100000, guid: 570d5d47d18799d428dc59ce777d4dea,
-    type: 3}
-  m_PrefabInstance: {fileID: 911675972}
-  m_PrefabAsset: {fileID: 0}
 --- !u!33 &1390509344 stripped
 MeshFilter:
   m_CorrespondingSourceObject: {fileID: 3300000, guid: 570d5d47d18799d428dc59ce777d4dea,
     type: 3}
   m_PrefabInstance: {fileID: 911675972}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &1390509345
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1390509341}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 0
-  m_CookingOptions: 14
-  m_Mesh: {fileID: 4300000, guid: 570d5d47d18799d428dc59ce777d4dea, type: 3}
 --- !u!1 &1600673017
 GameObject:
   m_ObjectHideFlags: 0

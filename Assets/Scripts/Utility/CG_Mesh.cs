@@ -185,7 +185,7 @@ namespace ComputerGraphic
 
                 Vector3 nextPos = vertices[i] + deltaT * (fi - gi);
 
-                /*
+                
                 if (IsPointInsideObjMesh(vertices[i], out Vector3 intersection))
                 {
 
@@ -198,9 +198,7 @@ namespace ComputerGraphic
                 else
                 {
                     vertices[i] = nextPos;
-                }*/
-
-                vertices[i] = nextPos;
+                }
             }
         }
 
