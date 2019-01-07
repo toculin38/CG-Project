@@ -12,6 +12,10 @@ public class MeshOperation : MonoBehaviour
     MeshFilter icoMeshFilter;
     [SerializeField]
     MeshFilter objMeshFilter;
+    [SerializeField]
+    Mesh[] fMeshes;
+    [SerializeField]
+    Mesh[] sMeshes;
 
     [Header("Parameters")]
     [SerializeField]
@@ -38,7 +42,7 @@ public class MeshOperation : MonoBehaviour
 
         AssetDatabase.CreateAsset(newMesh, "Assets/newApple.mesh" );
         AssetDatabase.SaveAssets();*/
-        
+
         for (int i = 0; i < icoMeshFilter.mesh.vertices.Length; i++)
         {
             isVertexAnchored.Add(false);
@@ -47,8 +51,8 @@ public class MeshOperation : MonoBehaviour
 
     void Update()
     {
-        DrawApple();
-        DrawIco();
+        //DrawApple();
+        //DrawIco();
     }
 
     void DrawApple()
@@ -95,47 +99,74 @@ public class MeshOperation : MonoBehaviour
         }
     }
 
+    public void StartBakeMeshes()
+    {
+        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
+        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
+        int[] objTriangles = objMeshFilter.mesh.triangles;
+
+
+        int preVertNum;
+        int iteration = 0;
+
+        do
+        {
+            preVertNum = icoMeshFilter.mesh.vertexCount;
+            CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
+            cgMesh.CalculatePos(deltaT);
+            cgMesh.AssignToMesh(icoMeshFilter.mesh);
+            BakeMesh("Assets/MeshAnim/Apple/f" + iteration + ".mesh");
+            cgMesh.Subdivision(areaThreshold);
+            cgMesh.Rearranging();
+            cgMesh.AssignToMesh(icoMeshFilter.mesh);
+            BakeMesh("Assets/MeshAnim/Apple/s" + iteration + ".mesh");
+            iteration++;
+        } while (preVertNum != icoMeshFilter.mesh.vertexCount);
+
+    }
+
+    void BakeMesh(string path)
+    {
+
+        icoMeshFilter.mesh = Instantiate(icoMeshFilter.mesh);
+        AssetDatabase.CreateAsset(icoMeshFilter.mesh, path);
+        AssetDatabase.SaveAssets();
+    }
+
     IEnumerator Inflating(float deltaT)
     {
         animating = true;
 
-        Mesh newMesh = new Mesh();
-        //把兔子的局部座標點(local)轉成世界座標點(world)
-        Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
-        //把這些世界座標點(world)轉成正二十面體的局部座標點(local)
-        Vector3[] objVertices = objWorldVertices.Select(v => icoMeshFilter.transform.InverseTransformPoint(v)).ToArray();
-        int[] objTriangles = objMeshFilter.mesh.triangles;
-        CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
-        cgMesh.CalculatePos(deltaT);
-        cgMesh.AssignToMesh(newMesh);
-
-        Vector3[] startVertices = icoMeshFilter.mesh.vertices;
-        Vector3[] startNormals = icoMeshFilter.mesh.normals;
-
-        Vector3[] endVertices = newMesh.vertices;
-        Vector3[] endNormals = newMesh.normals;
-
-        Vector3[] frameVertices = new Vector3[startVertices.Length];
-        Vector3[] frameNormals = new Vector3[startNormals.Length];
-
-        for (float dTimer = 0; dTimer < deltaT; dTimer += Time.deltaTime)
+        for (int i = 0; i < fMeshes.Length && i < sMeshes.Length; i++)
         {
-            float lerpRatio = dTimer / deltaT;
+            Vector3[] startVertices = icoMeshFilter.mesh.vertices;
+            Vector3[] startNormals = icoMeshFilter.mesh.normals;
 
-            for (int i = 0; i < frameVertices.Length; i++)
+            Vector3[] endVertices = fMeshes[i].vertices;
+            Vector3[] endNormals = fMeshes[i].normals;
+
+            Vector3[] frameVertices = new Vector3[startVertices.Length];
+            Vector3[] frameNormals = new Vector3[startNormals.Length];
+
+            for (float dTimer = 0; dTimer < deltaT; dTimer += Time.deltaTime)
             {
-                frameVertices[i] = Vector3.Lerp(startVertices[i], endVertices[i], lerpRatio);
-                frameNormals[i] = Vector3.Lerp(startNormals[i], endNormals[i], lerpRatio);
+                float lerpRatio = dTimer / deltaT;
+
+                for (int j = 0; j < frameVertices.Length; j++)
+                {
+                    frameVertices[j] = Vector3.Lerp(startVertices[j], endVertices[j], lerpRatio);
+                    frameNormals[j] = Vector3.Lerp(startNormals[j], endNormals[j], lerpRatio);
+                }
+
+                icoMeshFilter.mesh.vertices = frameVertices;
+                icoMeshFilter.mesh.normals = frameNormals;
+                yield return null;
             }
 
-            icoMeshFilter.mesh.vertices = frameVertices;
-            icoMeshFilter.mesh.normals = frameNormals;
-            yield return null;
+            icoMeshFilter.mesh = sMeshes[i];
         }
 
-        cgMesh.Subdivision(areaThreshold);
-        cgMesh.Rearranging();
-        cgMesh.AssignToMesh(icoMeshFilter.mesh);
+
         animating = false;
     }
 
