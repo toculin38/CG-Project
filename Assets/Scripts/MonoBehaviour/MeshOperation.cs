@@ -11,11 +11,29 @@ public class MeshOperation : MonoBehaviour
     [SerializeField]
     MeshFilter icoMeshFilter;
     [SerializeField]
+    MeshFilter initialIcoMeshFilter;
+    [SerializeField]
     MeshFilter objMeshFilter;
     [SerializeField]
-    Mesh[] fMeshes;
+    Mesh[] fAppleMeshes;
     [SerializeField]
-    Mesh[] sMeshes;
+    Mesh[] sAppleMeshes;
+    [SerializeField]
+    Mesh[] fHeartMeshes;
+    [SerializeField]
+    Mesh[] sHeartMeshes;
+    [SerializeField]
+    Mesh[] fToothMeshes;
+    [SerializeField]
+    Mesh[] sToothMeshes;
+    [SerializeField]
+    Mesh[] fHeadMeshes;
+    [SerializeField]
+    Mesh[] sHeadMeshes;
+    [SerializeField]
+    Mesh[] fStarMeshes;
+    [SerializeField]
+    Mesh[] sStarMeshes;
 
     [Header("Parameters")]
     [SerializeField]
@@ -87,7 +105,12 @@ public class MeshOperation : MonoBehaviour
         }
     }
 
-    public void StartInflate()
+    public void initialIco()
+    {
+        icoMeshFilter.mesh = initialIcoMeshFilter.mesh;
+    }
+
+    public void StartAppleInflate()
     {
         if (animating)
         {
@@ -95,10 +118,54 @@ public class MeshOperation : MonoBehaviour
         }
         else
         {
-            StartCoroutine(Inflating(deltaT));
+            StartCoroutine(Inflating(deltaT, fAppleMeshes, sAppleMeshes));
         }
     }
 
+    public void StartHeartInflate()
+    {
+        if (animating)
+        {
+            Debug.Log("Animating!");
+        }
+        else
+        {
+            StartCoroutine(Inflating(deltaT, fHeartMeshes, sHeartMeshes));
+        }
+    }
+    public void StartToothInflate()
+    {
+        if (animating)
+        {
+            Debug.Log("Animating!");
+        }
+        else
+        {
+            StartCoroutine(Inflating(deltaT, fToothMeshes, sToothMeshes));
+        }
+    }
+    public void StartHeadInflate()
+    {
+        if (animating)
+        {
+            Debug.Log("Animating!");
+        }
+        else
+        {
+            StartCoroutine(Inflating(deltaT, fHeadMeshes, sHeadMeshes));
+        }
+    }
+    public void StartStarInflate()
+    {
+        if (animating)
+        {
+            Debug.Log("Animating!");
+        }
+        else
+        {
+            StartCoroutine(Inflating(deltaT, fStarMeshes, sStarMeshes));
+        }
+    }
     public void StartBakeMeshes()
     {
         Vector3[] objWorldVertices = objMeshFilter.mesh.vertices.Select(v => objMeshFilter.transform.TransformPoint(v)).ToArray();
@@ -115,11 +182,11 @@ public class MeshOperation : MonoBehaviour
             CG_Mesh cgMesh = new CG_Mesh(icoMeshFilter.mesh, objVertices, objTriangles, isVertexAnchored);
             cgMesh.CalculatePos(deltaT);
             cgMesh.AssignToMesh(icoMeshFilter.mesh);
-            BakeMesh("Assets/MeshAnim/Apple/f" + iteration + ".mesh");
-            cgMesh.Subdivision(areaThreshold);
+            BakeMesh("Assets/MeshAnim/Head-0.04-0.05/f" + iteration + ".mesh");
+            cgMesh.Subdivision(areaThreshold);  
             cgMesh.Rearranging();
             cgMesh.AssignToMesh(icoMeshFilter.mesh);
-            BakeMesh("Assets/MeshAnim/Apple/s" + iteration + ".mesh");
+            BakeMesh("Assets/MeshAnim/Head-0.04-0.05/s" + iteration + ".mesh");
             iteration++;
         } while (preVertNum != icoMeshFilter.mesh.vertexCount);
 
@@ -133,7 +200,7 @@ public class MeshOperation : MonoBehaviour
         AssetDatabase.SaveAssets();
     }
 
-    IEnumerator Inflating(float deltaT)
+    IEnumerator Inflating(float deltaT, Mesh[] fMeshes, Mesh[] sMeshes)
     {
         animating = true;
 
